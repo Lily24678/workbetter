@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>datagrid的行录入效果 </title>
+		<script type="text/javascript" src="../js/jquery-1.8.3.js"></script>
+		<script type="text/javascript" src="../js/easyui/jquery.easyui.min.js"></script>
+		<script type="text/javascript" src="../js/easyui/locale/easyui-lang-zh_CN.js"></script>
+		<link rel="stylesheet" href="../js/easyui/themes/default/easyui.css" />
+		<link rel="stylesheet" href="../js/easyui/themes/icon.css" />
+		<script>
+			var toolbar = [{
+				id: 'add',
+				iconCls: 'icon-add',
+				text: '添加',
+				handler: function() {
+					if(currentEditIndex != undefined) {//正在编译时，结束编译
+						$("#grid").datagrid("cancelEdit", currentEditIndex);
+					}
+					if(currentEditIndex == undefined) {
+						$('#grid').datagrid('insertRow', {
+							index: 0, // index start with 0
+							row: {}
+						});
+						$("#grid").datagrid("beginEdit", 0) //开启编辑功能
+						currentEditIndex = 0;
+					}
+
+				}
+			}, {
+				id: 'edit',
+				iconCls: 'icon-edit',
+				text: '编辑',
+				handler: function() {
+					//获取所有选中的行	
+					var rows = $("#grid").datagrid("getSelections");
+					if(rows.length == 1 && 　currentEditIndex == undefined) {
+						var index = $("#grid").datagrid("getRowIndex", rows[0]); //获取选中行的索引
+						currentEditIndex = index;
+						$("#grid").datagrid("beginEdit", currentEditIndex) //开启编辑功能
+					} else {
+						$.messager.alert("警告", "只能选择一行进行编辑", "warning");
+					}
+				}
+			}, {
+				id: 'save',
+				iconCls: 'icon-save',
+				text: '保存',
+				handler: function() {
+					$("#grid").datagrid("endEdit", currentEditIndex); //结束编辑，数据改变
+				}
+			}, {
+				id: 'cancel',
+				iconCls: 'icon-cancel',
+				text: '撤销',
+				handler: function() {
+					$("#grid").datagrid("cancelEdit", currentEditIndex); //结束编辑，数据不变
+				}
+			}];
+			var currentEditIndex = undefined; //设置全局变量，当前行的索引
+			var columns = [
+				[{
+					field: 'id',
+					title: '商品编码',
+					width: 100,
+					editor: {
+						type: 'validatebox',
+						options: {
+							required: true//防止保存时，表格的数数为空
+						}
+					},
+				}, {
+					field: 'name',
+					title: '商品名称',
+					width: 200,
+					editor: {
+						type: 'validatebox',
+						options: {
+							required: true
+						}
+					},
+				}, {
+					field: 'price',
+					title: '商品价格',
+					width: 200,
+					editor: {
+						type: 'validatebox',
+						options: {
+							required: true
+						}
+					},
+				}, ]
+			];
+
+			$(function() {
+				$("#grid").datagrid({
+					url: 'product.json',
+					toolbar: toolbar,
+					columns: columns,
+					onAfterEdit: function(rowIndex, rowData, changes) {
+						//当编辑结束后才会触发，endEdit
+						currentEditIndex = undefined;
+					},
+					onCancelEdit: function(rowIndex, rowData) {						
+						//cancelEdit
+						currentEditIndex = undefined;
+					}
+				});
+			})
+		</script>
+
+		<body>
+			<table id="grid"></table>
+		</body>
+
+</html>
